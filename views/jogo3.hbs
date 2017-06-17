@@ -2,12 +2,207 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Catos Games Pong</title>
-    {> header}
-  </head>
-  <body>
-    {> navbar}
+    <title>Cato Games</title>
 
-    {> footer}
+    {{> header}}
+
+    <style media="screen">
+    #canvas-container {
+      width: 100%;
+      text-align:center;
+    }
+
+    canvas {
+      display: inline;
+    }
+    </style>
+
+  </head>
+
+  <body>
+
+    {{> navbar}}
+
+    <div class="container" id="canvas-container">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <script type="text/javascript">
+    //canvas
+    var canvas;
+    var canvasContext;
+    // Ball
+    var ballX = 50;
+    var ballY = 50;
+    var ballSpeedY = 4;
+    var ballSpeedX = 10;
+    // Left paddle
+    var paddle1Y = 250;
+    var PADDLE_HEIGHT = 100;
+    var PADDLE_WIDTH = 10;
+    var player1Score = 0;
+    // Right paddle
+    var paddle2Y = 250;
+    var player2Score = 0;
+
+    var winScreen = false;
+
+    function handleMouseClick(etv) {
+      if(winScreen) {
+        ballSpeedX = -ballSpeedX;
+        ballX = canvas.width/2;
+        ballY = canvas.height/2;
+        ballSpeedY = 4;
+        player1Score = 0;
+        player2Score = 0;
+        winScreen = false;
+      }
+    }
+
+    function calculateMousePos(evt) {
+      var rect = canvas.getBoundingClientRect();
+      var root = document.documentElement;
+      var mouseX = evt.clientX - rect.left - root.scrollLeft;
+      var mouseY = evt.clientY - rect.top - root.scrollTop;
+      return {
+        x: mouseX,
+        y: mouseY
+      }
+    }
+
+      window.onload = function() {
+      canvas = document.getElementById('gameCanvas');
+      canvasContext = canvas.getContext('2d');
+
+      var framesPerSecond = 30;
+
+      setInterval(function() {
+          moveEverything();
+          drawEverything();
+        }, 1000/framesPerSecond);
+
+        canvas.addEventListener('mousemove',
+                  function(evt) {
+                    var mousePos = calculateMousePos(evt);
+                    paddle1Y = mousePos.y - (PADDLE_HEIGHT/2);
+                  })
+
+          canvas.addEventListener('mousedown', handleMouseClick);
+    }
+
+    function moveEverything() {
+      if (winScreen) {
+        return;
+      }
+
+        if (paddle2Y + PADDLE_HEIGHT/2 < ballY - 35) {
+          paddle2Y += 6;
+        } else if (paddle2Y + PADDLE_HEIGHT/2 > ballY + 35) {
+          paddle2Y -= 6;
+        }
+
+      ballX +=ballSpeedX;
+      ballY +=ballSpeedY;
+
+
+      if(ballX >= canvas.width - 30) {
+        if(ballY > paddle2Y && ballY < paddle2Y+PADDLE_HEIGHT) {
+          ballSpeedX = -ballSpeedX;
+          var deltaY = ballY - (paddle2Y + PADDLE_HEIGHT/2);
+          ballSpeedY = deltaY * 0.35;
+        } else if (ballX > canvas.width) {
+          player1Score++;
+          console.log(player1Score);
+          ballReset();
+        }
+      };
+
+      if(ballX <= 10 + PADDLE_WIDTH) {
+        if(ballY > paddle1Y && ballY < paddle1Y + PADDLE_HEIGHT) {
+          ballSpeedX = -ballSpeedX;
+          var deltaY = ballY - (paddle1Y + PADDLE_HEIGHT/2);
+          ballSpeedY = deltaY * 0.35;
+        } else if (ballX < 0) {
+          player2Score++;
+          console.log(player2Score);
+          ballReset();
+        }
+      }
+
+
+        if(ballY > canvas.height) {
+          ballSpeedY = -ballSpeedY
+        };
+
+        if(ballY < 0) {
+          ballSpeedY = -ballSpeedY
+        }
+    };
+
+    function drawNet() {
+      for(var i=0; i<canvas.height; i+=40) {
+      colorRect(canvas.width/2 - 1, i, 2, 20, 'white')
+      }
+    }
+
+    function drawEverything() {
+      // Black background
+      colorRect(0, 0, canvas.width, canvas.height, 'black');
+
+      canvasContext.fillStyle = 'white'
+      if (winScreen) {
+        if (player1Score == 5) {
+            canvasContext.font="20px Georgia"
+            canvasContext.fillText('O jogador da esquerda ganhou!', 280, 280)
+        } else if (player2Score == 5) {
+            canvasContext.font='20px Georgia'
+            canvasContext.fillText('O jogador da direita ganhou!', 280, 280)
+        }
+        canvasContext.font='11px Georgia'
+        canvasContext.fillText('Clique para continuar', 370, 500)
+        return;
+      }
+
+      drawNet()
+      // Left Player paddle
+      colorRect(10, paddle1Y, PADDLE_WIDTH, PADDLE_HEIGHT, 'white');
+      // Right Player paddle
+      colorRect(canvas.width - PADDLE_WIDTH - 10, paddle2Y, PADDLE_WIDTH, PADDLE_HEIGHT, 'white')
+      // The ball
+    colorCircle(ballX, ballY, 10, 'white')
+
+    canvasContext.fillText('Cato Games ®', 363, 595)
+    canvasContext.font='13px sans-serif';
+    canvasContext.fillText(player1Score, 150, 100);
+    canvasContext.fillText(player2Score, canvas.width-150, 100);
+    }
+
+    function colorCircle(centerX, centerY, radius, drawColor) {
+      canvasContext.fillStyle = drawColor;
+      canvasContext.beginPath();
+      canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true);
+      canvasContext.fill();
+    }
+
+    function colorRect(leftX, topY, width, height, drawColor) {
+        canvasContext.fillStyle = drawColor;
+        canvasContext.fillRect(leftX, topY, width, height)
+    }
+
+    function ballReset() {
+      if(player1Score == 5 || player2Score == 5) {
+        winScreen = true;
+      } else {
+        ballSpeedX = -ballSpeedX;
+        ballX = canvas.width/2;
+        ballY = canvas.height/2;
+        ballSpeedY = 4;
+      }
+    }
+    </script>
+</div>
+    </div>
+
+        {{> footer}}
+
   </body>
 </html>

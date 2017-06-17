@@ -24,4 +24,8 @@ app.get('/jogo2', (req, res) => {
   res.render('jogo2.hbs')
 });
 
+app.get('/jogo3', (req, res) => {
+  res.render('jogo3.hbs')
+});
+
 app.listen(port);
